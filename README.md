@@ -168,33 +168,6 @@ No regex: parser uses string manipulation only (split, substring, etc.)
 
 Future Execution: Transactions with ON date in the future are marked pending
 
-## 🌐 Deployment (Render)
-
-1. Push repository to GitHub
-2. Create a new **Web Service** on Render
-3. Select repository
-4. Set runtime to **Node.js 18+**
-5. Set build command:
-
-```
-npm install
-```
-
-6. Set start command:
-
-```
-node app.js
-```
-
-7. Add environment variables:
-
-```
-NODE_ENV=production
-PORT=8811
-```
-
-8. Deploy
-
 ---
 
 ## 📖 API Documentation
