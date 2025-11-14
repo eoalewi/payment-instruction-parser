@@ -10,6 +10,7 @@ module.exports = createHandler({
     appLogger.info({ requestContext: rc, response: rs }, 'payment-instruction-request-completed');
   },
 
+  
   async handler(rc, helpers) {
     try {
       const payload = rc.body || {};

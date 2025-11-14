@@ -63,6 +63,7 @@ module.exports = async function paymentInstructionsService(payload) {
     }));
     return baseResponse;
   }
+  
   // Currency support
   const SUPPORTED = ['NGN', 'USD', 'GBP', 'GHS'];
   if (!currency || SUPPORTED.indexOf(currency.toUpperCase()) === -1) {

@@ -3,6 +3,7 @@ function isTokenEmpty(t) {
   return t === undefined || t === null || (typeof t === 'string' && t.trim() === '');
 }
 function normalizeTokens(instruction) {
+    
   // Split on space and remove empty tokens (handles multiple spaces)
   const parts = instruction.split(' ');
   const tokens = parts.filter((p) => p !== '').map((p) => p.trim());
