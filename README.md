@@ -148,7 +148,7 @@ The API will run on `http://localhost:8811/payment-instructions`.
 This API is deployed on **Render**:
 
 **Base URL:**
-[https://payment-instruction-parser-q94u.onrender.com/payment-instructions](https://payment-instruction-parser-q94u.onrender.com/payment-instructions)
+[https://payment-instruction-parser-q94u.onrender.com](https://payment-instruction-parser-q94u.onrender.com)
 
 You can send POST requests directly to this URL.
 
@@ -230,10 +230,13 @@ curl -X POST https://payment-instruction-parser-q94u.onrender.com/payment-instru
 
 ---
 
-## 📧 Contact
+## 👤 Author
 
-* GitHub: [https://github.com/eoalewi](https://github.com/eoalewi)
-* Deployed API: [https://payment-instruction-parser-q94u.onrender.com/payment-instructions](https://payment-instruction-parser-q94u.onrender.com/payment-instructions)
+Oluwatosin Alewi
+📧 [Email](alewitosino208@gmail.com)
+ | 🌐 [GitHub](https://github.com/eoalewi)
+ | 🔗 [LinkedIn](https://linkedin.com/in/alewioe)
+ |🔗 [Deployed API](https://payment-instruction-parser-q94u.onrender.com)
 
 ```
 
