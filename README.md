@@ -1,205 +1,239 @@
-# Payment Instructions Endpoint
+# Payment Instruction Parser API
 
-This repository implements the **Payment Instructions** feature for the Onboarding flow.
+A **Node.js + Express API** that parses, validates, and executes structured payment instructions for financial transactions. Built as part of the **Resilience 17 Venture Studio Backend Engineer Assessment 2025**.
 
-It includes:
-
-* A new endpoint
-* A parser that extracts transfer instructions WITHOUT REGEX
-* A service layer that stores parsed data
-* Tests using Mock Models
+The API simulates a core fintech functionality: moving money between accounts according to DEBIT/CREDIT instructions, with robust validation and clear response codes.
 
 ---
 
-## 📌 Endpoint: `/onboarding/payment-instructions`
+## 🛠️ Features
 
-### **Method:** `POST`
-
-### **Auth:** Public
-
-### **Purpose**
-
-Accept a free‑form banking instruction text and extract structured fields:
-
-* Sender account name
-* Sender account number
-* Sender bank name
-* Recipient account name
-* Recipient account number
-* Recipient bank name
-
-The extracted values are saved into the database and returned in the response.
+- Parse structured payment instructions (DEBIT / CREDIT formats)
+- Validate instructions against business rules:
+  - Amount positivity
+  - Supported currencies (NGN, USD, GBP, GHS)
+  - Account existence and uniqueness
+  - Sufficient funds for debit
+  - Proper instruction syntax and keyword order
+  - Optional scheduled execution (`ON YYYY-MM-DD`)
+- Execute transactions immediately or schedule for future dates
+- Clear response with transaction status, reason, and updated account balances
+- Handles both valid and invalid instructions gracefully
+- No regex used – parsing is done using string manipulation
 
 ---
 
-## 🧩 Data Flow Overview
+## 📦 Endpoint
 
-```
-➡️ Request Body
-    { "paymentInstructions": "...raw text..." }
-        ⬇
-➡️ Validator (Zod)
-        ⬇
-➡️ Parser (no regex, simple string search)
-        ⬇
-➡️ Service (stores results)
-        ⬇
-➡️ Response (structured JSON)
-```
+### POST `/payment-instructions`
 
----
-
-## 📥 Example Request
-
-```json
-POST /onboarding/payment-instructions
-Content-Type: application/json
-
-{
-  "paymentInstructions": "Sender: John Doe \n Account Number: 1234567890 \n Bank: First Bank"
-}
-```
-
-## 📤 Example Response
+**Request Body Example:**
 
 ```json
 {
-  "success": true,
-  "data": {
-    "senderAccountName": "John Doe",
-    "senderAccountNumber": "1234567890",
-    "senderBankName": "First Bank",
-    "recipientAccountName": null,
-    "recipientAccountNumber": null,
-    "recipientBankName": null
-  }
+  "accounts": [
+    {"id": "a", "balance": 230, "currency": "USD"},
+    {"id": "b", "balance": 300, "currency": "USD"}
+  ],
+  "instruction": "DEBIT 30 USD FROM ACCOUNT a FOR CREDIT TO ACCOUNT b"
+}
+````
+
+**Successful Response:**
+
+```json
+{
+  "type": "DEBIT",
+  "amount": 30,
+  "currency": "USD",
+  "debit_account": "a",
+  "credit_account": "b",
+  "execute_by": null,
+  "status": "successful",
+  "status_reason": "Transaction executed successfully",
+  "status_code": "AP00",
+  "accounts": [
+    {
+      "id": "a",
+      "balance": 200,
+      "balance_before": 230,
+      "currency": "USD"
+    },
+    {
+      "id": "b",
+      "balance": 330,
+      "balance_before": 300,
+      "currency": "USD"
+    }
+  ]
+}
+```
+
+**Error Response (e.g., unsupported currency):**
+
+```json
+{
+  "type": "DEBIT",
+  "amount": 30,
+  "currency": "EUR",
+  "debit_account": "a",
+  "credit_account": "b",
+  "execute_by": null,
+  "status": "failed",
+  "status_reason": "Unsupported currency. Only NGN, USD, GBP, and GHS are supported",
+  "status_code": "CU02",
+  "accounts": [
+    {
+      "id": "a",
+      "balance": 230,
+      "balance_before": 230,
+      "currency": "USD"
+    },
+    {
+      "id": "b",
+      "balance": 300,
+      "balance_before": 300,
+      "currency": "USD"
+    }
+  ]
+}
+```
+
+**Unparseable Instruction Response:**
+
+```json
+{
+  "type": null,
+  "amount": null,
+  "currency": null,
+  "debit_account": null,
+  "credit_account": null,
+  "execute_by": null,
+  "status": "failed",
+  "status_reason": "Malformed instruction: unable to parse keywords",
+  "status_code": "SY03",
+  "accounts": []
 }
 ```
 
 ---
 
-## 🛠️ Project Structure
+## ⚙️ Installation
 
-```
-endpoints/
-└── onboarding/
-    └── payment-instructions.js
+1. Clone the repo:
 
-services/
-└── payment-instructions/
-       ├── index.js
-       └── parser.js
-
-test/
-└── payment-instructions.test.js
+```bash
+git clone https://github.com/eoalewi/payment-instruction-parser
+cd payment-instruction-parser
 ```
 
----
+2. Install dependencies:
 
-## 🧠 Parser Rules (NO REGEX)
-
-The parser scans for these labels:
-
-```
-Sender Name
-Sender Account Number
-Sender Bank Name
-Recipient Name
-Recipient Account Number
-Recipient Bank Name
-```
-
-It supports variations like:
-
-```
-Sender:
-Sender Name is
-Sender Account Number -
-```
-
-And stops capturing when it reaches:
-
-* A newline
-* Another known label
-* End of string
-
----
-
-## 🧪 Running Tests
-
-Tests use Mock Models.
-
-```
-npm test
-```
-
-Example output:
-
-```
-Payment Instructions Parser
-  ✓ should extract sender information
-  ✓ should handle missing fields
-  ✓ should extract recipient fields
-  ✓ should return null for unsupported text
-```
-
----
-
-## 🚀 Running Locally
-
-```
+```bash
 npm install
-node app.js
 ```
 
-Server starts on:
+3. Start the server locally:
 
+```bash
+npm start
 ```
-http://localhost:8811
+
+The API will run on `http://localhost:8811/payment-instructions`.
+
+---
+
+## 🌐 Deployment
+
+This API is deployed on **Render**:
+
+**Base URL:**
+[https://payment-instruction-parser-q94u.onrender.com/payment-instructions](https://payment-instruction-parser-q94u.onrender.com/payment-instructions)
+
+You can send POST requests directly to this URL.
+
+---
+
+## 📝 Parsing Rules
+
+* **Instruction formats supported:**
+
+  1. `DEBIT [amount] [currency] FROM ACCOUNT [account_id] FOR CREDIT TO ACCOUNT [account_id] [ON [date]]`
+  2. `CREDIT [amount] [currency] TO ACCOUNT [account_id] FOR DEBIT FROM ACCOUNT [account_id] [ON [date]]`
+
+* **Keyword rules:** Case-insensitive, must be in correct order
+
+* **Amount:** Positive integers only
+
+* **Currency:** NGN, USD, GBP, GHS
+
+* **Date:** Optional, `YYYY-MM-DD`, future dates mark transaction as pending
+
+* **Accounts:** Must exist in the `accounts` array and be unique
+
+---
+
+## ✅ Status Codes
+
+| Code | Status Reason                                |
+| ---- | -------------------------------------------- |
+| AM01 | Amount must be a positive integer            |
+| CU01 | Account currency mismatch                    |
+| CU02 | Unsupported currency                         |
+| AC01 | Insufficient funds in debit account          |
+| AC02 | Debit and credit accounts cannot be the same |
+| AC03 | Account not found                            |
+| AC04 | Invalid account ID format                    |
+| DT01 | Invalid date format                          |
+| SY01 | Missing required keyword                     |
+| SY02 | Invalid keyword order                        |
+| SY03 | Malformed instruction                        |
+| AP00 | Transaction executed successfully            |
+| AP02 | Transaction scheduled for future execution   |
+
+---
+
+## 🧪 Testing
+
+You can test the endpoint using **Postman**, **cURL**, or any HTTP client.
+Example with cURL:
+
+```bash
+curl -X POST https://payment-instruction-parser-q94u.onrender.com/payment-instructions \
+-H "Content-Type: application/json" \
+-d '{
+  "accounts": [
+    {"id": "a", "balance": 230, "currency": "USD"},
+    {"id": "b", "balance": 300, "currency": "USD"}
+  ],
+  "instruction": "DEBIT 30 USD FROM ACCOUNT a FOR CREDIT TO ACCOUNT b"
+}'
 ```
 
 ---
 
-## 📌 Notes
+## 💻 Tech Stack
 
-No database: uses in-memory storage for accounts & transactions
-
-No regex: parser uses string manipulation only (split, substring, etc.)
-
-Future Execution: Transactions with ON date in the future are marked pending
+* Node.js (Vanilla JS)
+* Express.js
+* Render (Cloud Deployment)
+* No database required (in-memory execution)
 
 ---
 
-## 📖 API Documentation
+## 📝 Notes
 
-### `POST /onboarding/payment-instructions`
+* No regular expressions used for parsing
+* Handles multiple spacing, case-insensitive keywords
+* Immediate or scheduled execution based on `ON` date
+* Designed for **backend assessment** submission
 
-| Field               | Type   | Required |
-| ------------------- | ------ | -------- |
-| paymentInstructions | string | Yes      |
+---
 
-Response:
+## 📧 Contact
 
-```
-{
-  success: boolean,
-  data: {
-    senderAccountName,
-    senderAccountNumber,
-    senderBankName,
-    recipientAccountName,
-    recipientAccountNumber,
-    recipientBankName
-  }
-}
-```
-
-## 👤 Author
-
-Oluwatosin Alewi
-📧 [Email](alewitosino208@gmail.com)
- | 🌐 [GitHub](https://github.com/eoalewi)
- | 🔗 [LinkedIn](https://linkedin.com/in/alewioe)
+* GitHub: [https://github.com/eoalewi](https://github.com/eoalewi)
+* Deployed API: [https://payment-instruction-parser-q94u.onrender.com/payment-instructions](https://payment-instruction-parser-q94u.onrender.com/payment-instructions)
 
 ```
 
