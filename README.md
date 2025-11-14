@@ -1,6 +1,6 @@
 # Payment Instruction Parser API
 
-A **Node.js + Express API** that parses, validates, and executes structured payment instructions for financial transactions. Built as part of the **Resilience 17 Venture Studio Backend Engineer Assessment 2025**.
+A **Node.js + Express API** that parses, validates, and executes structured payment instructions for financial transactions.
 
 The API simulates a core fintech functionality: moving money between accounts according to DEBIT/CREDIT instructions, with robust validation and clear response codes.
 
