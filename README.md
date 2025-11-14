@@ -90,7 +90,7 @@ services/
        ├── index.js
        └── parser.js
 
-tests/
+test/
 └── payment-instructions.test.js
 ```
 
